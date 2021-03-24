@@ -1,8 +1,8 @@
-import React, { useEffect, useRef } from "react";
-import mapboxgl from "mapbox-gl";
-import * as turf from "@turf/turf";
+import React, { useEffect, useRef } from 'react';
+import mapboxgl from 'mapbox-gl';
+import * as turf from '@turf/turf';
 
-import "./app.css";
+import './app.css';
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN;
 
@@ -19,39 +19,34 @@ const App = () => {
   // Used to increment the value of the point measurement against the route.
   let counter = 0;
 
-  // San Francisco
-  const origin = [-122.414, 37.776];
-
-  // Washington DC
-  const destination = [-77.032, 38.913];
-
-  const destination2 = [-79.347015, 43.651070];
+  // San Francisco, Washington DC, Toronto
+  const placesArray = [[-122.414, 37.776], [-77.032, 38.913], [-79.347015, 43.651070]];
 
   // A single point that animates along the route.
   // Coordinates are initially set to origin.
   const point = {
-    type: "FeatureCollection",
+    type: 'FeatureCollection',
     features: [
       {
-        type: "Feature",
+        type: 'Feature',
         properties: {},
         geometry: {
-          type: "Point",
-          coordinates: origin,
-        },
-      },
-    ],
+          type: 'Point',
+          coordinates: placesArray[0]
+        }
+      }
+    ]
   };
 
-  // A simple line from origin to destination.
+  // A simple line from origin to destinations
   const route = {
-    type: "FeatureCollection",
+    type: 'FeatureCollection',
     features: [
       {
         type: "Feature",
         geometry: {
           type: "LineString",
-          coordinates: [origin, destination, destination2],
+          coordinates: placesArray,
         },
       },
     ],
@@ -61,9 +56,9 @@ const App = () => {
     // eslint-disable-next-line
     map = new mapboxgl.Map({
       container: mapContainer.current,
-      style: "mapbox://styles/mapbox/streets-v11",
+      style: 'mapbox://styles/mapbox/streets-v11',
       center: [-96, 37.8],
-      zoom: 3,
+      zoom: 3
     });
 
     // Calculate the distance in kilometers between route start/end point.
@@ -80,41 +75,53 @@ const App = () => {
     // Update the route with calculated arc coordinates
     route.features[0].geometry.coordinates = arc;
 
-    map.on("load", async () => {
-      await map.addSource("route", {
-        type: "geojson",
-        data: route,
+    map.on('load', async () => {
+      await map.addSource('route', {
+        type: 'geojson',
+        data: route
       });
 
-      await map.addSource("point", {
-        type: "geojson",
-        data: point,
+      await map.addSource('point', {
+        type: 'geojson',
+        data: point
       });
 
       await map.addLayer({
-        id: "route",
-        source: "route",
-        type: "line",
+        id: 'route',
+        source: 'route',
+        type: 'line',
         paint: {
-          "line-width": 2,
-          "line-color": "#007cbf",
-        },
+          'line-width': 2,
+          'line-color': '#007cbf'
+        }
       });
 
       await map.addLayer({
-        id: "point",
-        source: "point",
-        type: "symbol",
+        id: 'point',
+        source: 'point',
+        type: 'symbol',
         layout: {
-          "icon-image": "airport-15",
-          "icon-rotate": ["get", "bearing"],
-          "icon-rotation-alignment": "map",
-          "icon-allow-overlap": true,
-          "icon-ignore-placement": true,
-        },
+          'icon-image': 'airport-11',
+          'icon-size': 2,
+          'icon-rotate': ['get', 'bearing'],
+          'icon-rotation-alignment': 'map',
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true
+        }
       });
 
       await animate(counter);
+    });
+
+    // create destination markers
+    placesArray.forEach((dest) => {
+      new mapboxgl.Marker()
+        .setLngLat(dest)
+        .setPopup(new mapboxgl.Popup({
+          offset: 25,
+          closeButton: false
+        }).setHTML('<h3>Example Popup</h3><p>Add content here</p>'))
+        .addTo(map);
     });
 
     return () => map.remove();
@@ -125,12 +132,12 @@ const App = () => {
     const start =
       route.features[0].geometry.coordinates[
         counter >= steps ? counter - 1 : counter
-      ];
+        ];
 
     const end =
       route.features[0].geometry.coordinates[
         counter >= steps ? counter : counter + 1
-      ];
+        ];
 
     if (!start || !end) return;
 
@@ -148,7 +155,7 @@ const App = () => {
     );
 
     // Update the source with this new data
-    map.getSource("point").setData(point);
+    map.getSource('point').setData(point);
 
     // Request the next frame of animation as long as the end has not been reached
     if (counter < steps) {
@@ -160,10 +167,10 @@ const App = () => {
 
   const handleClick = () => {
     // Set the coordinates of the original point back to origin
-    point.features[0].geometry.coordinates = origin;
+    point.features[0].geometry.coordinates = placesArray[0];
 
     // Update the source layer
-    map.getSource("point").setData(point);
+    map.getSource('point').setData(point);
 
     // Reset the counter
     counter = 0;
@@ -181,7 +188,7 @@ const App = () => {
           Replay
         </button>
 
-        <div className="map" ref={mapContainer} />
+        <div className="map" ref={mapContainer}/>
       </div>
     </div>
   );
