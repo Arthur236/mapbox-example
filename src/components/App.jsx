@@ -1,15 +1,41 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import * as turf from '@turf/turf';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
+import TextField from '@material-ui/core/TextField';
 
 import './app.css';
+import { Button } from '@material-ui/core';
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN;
 
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    placesForm: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      width: '400px',
+      margin: '10px auto',
+    },
+    textField: {
+      marginLeft: theme.spacing(1),
+      marginRight: theme.spacing(1),
+      width: '25ch',
+    },
+  }),
+);
+
 const App = () => {
   let map;
+  const classes = useStyles();
 
   const mapContainer = useRef();
+
+  const [values, setValues] = useState({});
+  // Initial places San Francisco, Washington DC, Toronto
+  const [placesArray, setPlaces] = useState([[-122.414, 37.776], [-77.032, 38.913], [-79.347015, 43.651070]]);
 
   // Number of steps to use in the arc and animation, more steps means
   // a smoother arc and animation, but too many steps will result in a
@@ -18,9 +44,6 @@ const App = () => {
 
   // Used to increment the value of the point measurement against the route.
   let counter = 0;
-
-  // San Francisco, Washington DC, Toronto
-  const placesArray = [[-122.414, 37.776], [-77.032, 38.913], [-79.347015, 43.651070]];
 
   // A single point that animates along the route.
   // Coordinates are initially set to origin.
@@ -110,23 +133,22 @@ const App = () => {
         }
       });
 
+      // create destination markers
+      placesArray.forEach((dest) => {
+        new mapboxgl.Marker()
+          .setLngLat(dest)
+          .setPopup(new mapboxgl.Popup({
+            offset: 25,
+            closeButton: false
+          }).setHTML('<h3>Example Popup</h3><p>Add content here</p>'))
+          .addTo(map);
+      });
+
       await animate(counter);
     });
 
-    // create destination markers
-    placesArray.forEach((dest) => {
-      new mapboxgl.Marker()
-        .setLngLat(dest)
-        .setPopup(new mapboxgl.Popup({
-          offset: 25,
-          closeButton: false
-        }).setHTML('<h3>Example Popup</h3><p>Add content here</p>'))
-        .addTo(map);
-    });
-
     return () => map.remove();
-    // eslint-disable-next-line
-  }, []);
+  }, [placesArray]);
 
   const animate = () => {
     const start =
@@ -179,6 +201,19 @@ const App = () => {
     animate(counter);
   };
 
+  const handleChange = (e) => {
+    setValues({
+      ...values,
+      [e.target.name]: e.target.value
+    })
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    setPlaces([...placesArray, [values.lng, values.lat]]);
+  };
+
   return (
     <div className="map-wrapper">
       <h2>Mapbox Test</h2>
@@ -189,6 +224,37 @@ const App = () => {
         </button>
 
         <div className="map" ref={mapContainer}/>
+      </div>
+
+      <div className={classes.placesForm}>
+        <h2>Add a place</h2>
+
+        <form onSubmit={handleSubmit}>
+          <TextField
+            label="Lat"
+            name="lat"
+            placeholder="Latitude"
+            fullWidth
+            margin="normal"
+            type="float"
+            onChange={handleChange}
+          />
+
+          <TextField
+            label="Lng"
+            name="lng"
+            placeholder="Longitude"
+            fullWidth
+            margin="normal"
+            type="float"
+            helperText="Use a negative value eg: -38.765"
+            onChange={handleChange}
+          />
+
+          <Button type="submit" variant="contained" color="primary" fullWidth>
+            Add Place
+          </Button>
+        </form>
       </div>
     </div>
   );
