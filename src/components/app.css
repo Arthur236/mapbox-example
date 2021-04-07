@@ -4,6 +4,7 @@
 
 .map-container {
   position: relative;
+  height: 600px;
 }
 
 #map {
@@ -26,6 +27,20 @@
 
 .marker {
   margin-bottom: 20px;
+}
+
+.card-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.card {
+  width: 30%;
+}
+
+.card:hover {
+  cursor: pointer;
 }
 
 .mapboxgl-popup {

@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { easeCubic } from 'd3-ease';
 import * as turf from '@turf/turf';
+import { Card, CardContent } from '@material-ui/core';
 
 import diamond from './diamond2.png';
 import marker1 from './marker1.png';
@@ -62,6 +63,8 @@ const App = () => {
       center: [-96, 37.8],
       zoom: 3
     });
+
+    map.addControl(new mapboxgl.NavigationControl());
 
     // Calculate the distance in kilometers between route start/end point.
     const lineDistance = turf.length(route.features[0]);
@@ -204,6 +207,18 @@ const App = () => {
     counter = counter + 1;
   };
 
+  const handleCardClick = (coords) => {
+    map.flyTo({
+      center: coords,
+      zoom: 9,
+      bearing: 0,
+      speed: 2,
+      curve: 1,
+      easing: easeCubic,
+      essential: true
+    });
+  };
+
   const handleRestart = () => {
     map.flyTo({
       center: [-96, 37.8],
@@ -238,6 +253,16 @@ const App = () => {
         <div className="overlay">
           <button id="replay-btn" onClick={handleRestart}>Replay</button>
         </div>
+      </div>
+
+      <div className="card-container">
+        {destinations.map((destination) => (
+          <Card className="card" onClick={() => handleCardClick(destination)}>
+            <CardContent>
+              <h3>{destination}</h3>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );
