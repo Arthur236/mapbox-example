@@ -13,6 +13,7 @@ mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN;
 
 const App = () => {
   let map;
+
   const mapContainer = useRef();
 
   const destinations = [[-122.414, 37.776], [-77.032, 38.913], [-79.347015, 43.651070]];
@@ -61,8 +62,17 @@ const App = () => {
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v11',
       center: [-96, 37.8],
-      zoom: 3
+      zoom: 4
     });
+
+    /*
+      List of styles
+      mapbox://styles/mapbox/streets-v11
+      mapbox://styles/mapbox/outdoors-v11
+      mapbox://styles/mapbox/light-v10
+      mapbox://styles/mapbox/dark-v10
+      mapbox://styles/mapbox/satellite-v11
+    */
 
     map.addControl(new mapboxgl.NavigationControl());
 
@@ -160,7 +170,7 @@ const App = () => {
               .on('close', () => {
                 map.flyTo({
                   center: [-96, 37.8],
-                  zoom: 3,
+                  zoom: 4,
                   bearing: 0,
                   speed: 2,
                   curve: 1,
@@ -172,10 +182,13 @@ const App = () => {
           .addTo(map);
       });
 
-      animate();
+      setTimeout(() => {
+        animate();
+      }, 1000);
     });
 
     return () => map.remove();
+    // eslint-disable-next-line
   }, []);
 
   const animate = () => {
@@ -222,7 +235,7 @@ const App = () => {
   const handleRestart = () => {
     map.flyTo({
       center: [-96, 37.8],
-      zoom: 3,
+      zoom: 4,
       bearing: 0,
       speed: 2,
       curve: 1,
@@ -247,8 +260,8 @@ const App = () => {
     <div className="map-wrapper">
       <h2>Mapbox Test</h2>
 
-      <div className="map-container" ref={mapContainer}>
-        <div id="map"/>
+      <div className="map-container">
+        <div id="map" ref={mapContainer}/>
 
         <div className="overlay">
           <button id="replay-btn" onClick={handleRestart}>Replay</button>
@@ -257,7 +270,7 @@ const App = () => {
 
       <div className="card-container">
         {destinations.map((destination) => (
-          <Card className="card" onClick={() => handleCardClick(destination)}>
+          <Card key={destination} className="card" onClick={() => handleCardClick(destination)}>
             <CardContent>
               <h3>{destination}</h3>
             </CardContent>
